@@ -5,6 +5,7 @@
       <a-button type="primary" @click="handleClick">新建</a-button>
       <a-modal
         v-model:visible="visible"
+        :mask-closable="false"
         title="新建菜单"
         @ok="handleOk"
         @cancel="handleCancel"
@@ -12,21 +13,31 @@
         <a-form :model="form">
           <a-form-item field="locale" label="菜单名称">
             <a-input
-              v-model="form.locale"
+              v-model="form.menuName"
               placeholder="请输入菜单名称"
             ></a-input>
           </a-form-item>
-          <a-form-item field="parentNo" label="父级菜单">
-            <a-select
+          <a-form-item field="parentNo" label="上级菜单">
+            <a-tree-select
               v-model="form.parentNo"
-              :options="parentMenuOptions"
+              :allow-search="true"
               :loading="loading"
               :field-names="parentMenuFieldNames"
-              placeholder="请选择父级菜单"
-              allow-search
-              @search="handleParentMenuSearch"
-              @popup-visible-change="handlePopup"
-            ></a-select>
+              :data="parentMenuOptions"
+              placeholder="请选择上级菜单"
+              @search="searchParentMenu"
+              @popup-visible-change="parentMenuPopup"
+            ></a-tree-select>
+            <!--            <a-select-->
+            <!--              v-model="form.parentNo"-->
+            <!--              :options="parentMenuOptions"-->
+            <!--              :loading="loading"-->
+            <!--              :field-names="parentMenuFieldNames"-->
+            <!--              placeholder="请选择父级菜单"-->
+            <!--              allow-search-->
+            <!--              @search="handleParentMenuSearch"-->
+            <!--              @popup-visible-change="handlePopup"-->
+            <!--            ></a-select>-->
           </a-form-item>
           <a-form-item field="path" label="路由地址">
             <a-input v-model="form.path" placeholder="请输入路由地址"></a-input>
@@ -35,7 +46,7 @@
             <a-input v-model="form.name" placeholder="请输入组件名称"></a-input>
           </a-form-item>
           <a-form-item field="order" label="排序">
-            <a-input-number v-model="form.order" :min="0" />
+            <a-input-number v-model="form.sort" :min="0" />
           </a-form-item>
         </a-form>
       </a-modal>
@@ -45,45 +56,55 @@
 
 <script lang="ts" setup>
   import { ref, reactive } from 'vue';
-  import { getMenuOptions, MenuOptionsRes } from '@/api/menu';
+  import { getMenuOptions, MenuOptionsRes, editMenu, Menu } from '@/api/menu';
 
+  // 表单
   const visible = ref(false);
-  const loading = ref(false);
-  const form = reactive({
+  const form = reactive<Menu>({
     path: '',
     parentNo: '',
-    locale: '',
+    menuName: '',
     name: '',
-    order: 0,
+    sort: 1,
+    icon: '',
   });
   const handleClick = () => {
     visible.value = true;
   };
-  const handleOk = () => {
+  const handleOk = async () => {
     console.log(form);
-    visible.value = false;
+    try {
+      await editMenu(form);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      visible.value = false;
+    }
   };
   const handleCancel = () => {
     visible.value = false;
   };
-  // 父级菜单
-  const parentMenuFieldNames = { value: 'menuNo', label: 'menuName' };
+
+  // 上级菜单
+  const loading = ref(false);
   const parentMenuOptions = ref<MenuOptionsRes[]>([]);
-
-  const handlePopup = async (value: boolean) => {
-    if (!value) {
-      return;
-    }
-    await handleParentMenuSearch('');
+  const parentMenuFieldNames = {
+    key: 'menuNo',
+    title: 'menuName',
+    children: 'children',
   };
-
-  const handleParentMenuSearch = async (value: string) => {
+  const searchParentMenu = async (value: string) => {
     try {
       loading.value = true;
       const { data } = await getMenuOptions({ name: value });
       parentMenuOptions.value = data;
     } finally {
       loading.value = false;
+    }
+  };
+  const parentMenuPopup = async (value: boolean) => {
+    if (value) {
+      await searchParentMenu('');
     }
   };
 </script>
