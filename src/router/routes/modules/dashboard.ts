@@ -22,7 +22,14 @@ const DASHBOARD: AppRouteRecordRaw = {
         roles: ['*'],
       },
     },
-
+    {
+      path: 'menu2',
+      name: 'menu2',
+      component: () => import('@/views/menu/form/index.vue'),
+      meta: {
+        requiresAuth: true,
+      },
+    },
     {
       path: 'monitor',
       name: 'Monitor',

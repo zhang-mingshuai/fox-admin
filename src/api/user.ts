@@ -11,7 +11,7 @@ export interface LoginRes {
   token: string;
 }
 export function login(data: LoginData) {
-  return axios.post<LoginRes>('/api/user/login', data);
+  return axios.post<LoginRes>('/api/account/login', data);
 }
 
 export function logout() {
@@ -23,5 +23,5 @@ export function getUserInfo() {
 }
 
 export function getMenuList() {
-  return axios.post<RouteRecordNormalized[]>('/api/user/menu');
+  return axios.post<RouteRecordNormalized[]>('/api/menu/list');
 }

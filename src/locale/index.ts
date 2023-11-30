@@ -17,6 +17,9 @@ const i18n = createI18n({
     'en-US': en,
     'zh-CN': cn,
   },
+  // missingWarn、fallbackWarn同时设置，才能禁用控制台警告
+  missingWarn: false,
+  fallbackWarn: false,
 });
 
 export default i18n;
